@@ -1,0 +1,795 @@
+Program.Sub.ScreenSU.Start
+gui.Form1..create
+gui.Form1..caption("Automated WO Update")
+gui.Form1..size(5400,4545)
+gui.Form1..minx(0)
+gui.Form1..miny(0)
+gui.Form1..position(0,0)
+gui.Form1..event(unload,form1_unload)
+gui.Form1..alwaysontop(False)
+gui.Form1..fontname("Arial")
+gui.Form1..fontsize(8)
+gui.Form1..forecolor(0)
+gui.Form1..fontstyle(,,,,)
+gui.Form1..BackColor(-2147483633)
+gui.Form1..controlbox(True)
+gui.Form1..maxbutton(True)
+gui.Form1..minbutton(True)
+gui.Form1..mousepointer(0)
+gui.Form1..moveable(True)
+gui.Form1..sizeable(False)
+gui.Form1..ShowInTaskBar(True)
+gui.Form1..titlebar(True)
+gui.Form1.cmdProcess.create(button)
+gui.Form1.cmdProcess.caption("Process")
+gui.Form1.cmdProcess.visible(True)
+gui.Form1.cmdProcess.size(1000,550)
+gui.Form1.cmdProcess.zorder(0)
+gui.Form1.cmdProcess.position(400,3110)
+gui.Form1.cmdProcess.enabled(True)
+gui.Form1.cmdProcess.fontname("Arial")
+gui.Form1.cmdProcess.fontsize(8)
+gui.Form1.cmdProcess.event(click,cmdprocess_click)
+gui.Form1.cmdProcess.defaultvalue("")
+gui.Form1.cmdProcess.controlgroup(0)
+gui.Form1.cmdError.create(button)
+gui.Form1.cmdError.caption("Error Log")
+gui.Form1.cmdError.visible(True)
+gui.Form1.cmdError.size(1000,550)
+gui.Form1.cmdError.zorder(0)
+gui.Form1.cmdError.position(3610,3125)
+gui.Form1.cmdError.enabled(True)
+gui.Form1.cmdError.fontname("Arial")
+gui.Form1.cmdError.fontsize(8)
+gui.Form1.cmdError.event(click,cmderror_click)
+gui.Form1.cmdError.defaultvalue("")
+gui.Form1.cmdError.controlgroup(0)
+gui.Form1.progress1.create(progressbar)
+gui.Form1.progress1.visible(True)
+gui.Form1.progress1.size(4320,780)
+gui.Form1.progress1.zorder(0)
+gui.Form1.progress1.position(400,500)
+gui.Form1.progress1.enabled(True)
+gui.Form1.lblErrors.create(label,"Number of Errors Found:",True,2295,255,1,680,2345,True,0,Arial,8,-2147483633,0)
+gui.Form1.lblErrors.defaultvalue("")
+gui.Form1.lblErrors.controlgroup(0)
+gui.Form1.txtError.create(textbox,"",True,495,315,0,3670,2295,True,0,Arial,8,-2147483643,1)
+gui.Form1.txtError.defaultvalue("")
+gui.Form1.txtError.controlgroup(0)
+gui.Form1.lblFiles.create(label,"Number of Files to be Processed:",True,2520,255,1,665,1700,True,0,Arial,8,-2147483633,0)
+gui.Form1.lblFiles.defaultvalue("")
+gui.Form1.lblFiles.controlgroup(0)
+gui.Form1.txt2.create(textbox,"",True,495,300,0,3655,1645,True,0,Arial,8,-2147483643,1)
+gui.Form1.txt2.defaultvalue("")
+gui.Form1.txt2.controlgroup(0)
+
+
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+
+Variable.Global.Incoming.Declare(String)
+Variable.Global.Processed.Declare(String)
+Variable.UDT.uSetup.Define("JOB",String,JOB)
+Variable.UDT.uSetup.Define("SUFFIX",String,SUFFIX)
+Variable.UDT.uSetup.Define("SEQ",String,SEQ)
+Variable.UDT.uSetup.Define("LMO",String,LMO)
+Variable.uGlobal.uSetup.Declare("uSetup")
+Variable.Global.progbarvalue.Declare(Float,0)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+'created: 7/27/15
+'coded by: WAW
+'This is a custom GAB script that will process files, with rules as specified by the customer
+
+F.odbc.Connection!con.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+
+Gui.Form1..Visible(true)
+Gui.Form1.txtError.Enabled(false)
+Gui.Form1.txt2.Enabled(false)
+Gui.Form1.progress1.Visible(false)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_3874_Auto_WO_Update.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form1_unload)
+Function.Intrinsic.Control.EndIf
+
+
+Program.Sub.Main.End
+
+program.sub.form1_unload.start
+F.Intrinsic.Control.SetErrorHandler("form1_unload_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+F.ODBC.Connection!con.Close
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("form1_unload_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_3874_Auto_WO_Update.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+
+
+program.sub.form1_unload.end
+
+program.sub.cmdprocess_click.start
+F.Intrinsic.Control.SetErrorHandler("cmdprocess_click_Err")
+F.Intrinsic.Control.ClearErrors
+
+'declaration of local/global variables
+V.Local.sError.Declare(String)
+V.Local.sdocfile.Declare(String)
+V.Local.bdocexists.Declare(Boolean)
+V.Local.sfiledata.Declare(String)
+V.Local.sfilelines.Declare(String)
+V.Local.i.Declare(Long)
+V.Local.sfilelist.Declare(String)
+V.Local.sglobalret.Declare(String)
+V.Local.sprocessfile.Declare(String)
+V.Local.sprocessfilelines.Declare(String)
+V.Local.sjobpart.Declare(String)
+V.Local.sjob.Declare(String)
+V.Local.ssuff.Declare(String)
+V.Local.spart.Declare(String)
+V.Local.sref.Declare(String)
+V.Local.snumerical.Declare(String)
+V.Local.spartnumerical.Declare(String)
+V.local.bsuff.Declare(Boolean)
+V.Local.i2.Declare(Long)
+V.Local.ssql.Declare(String)
+V.Local.serrorfile.Declare(String)
+V.Local.swo.declare(String)
+V.Local.ssql2.Declare(String)
+V.Local.bpartcheck.Declare(Boolean)
+V.Local.bpartcheck.Set(False)
+V.Local.bjobcheck.Declare(Boolean)
+V.Local.bjobcheck.Set(False)
+V.Local.brow4partcheck.Declare(Boolean)
+V.Local.brow4partcheck.Set(False)
+V.Local.slaborseq.Declare(String)
+V.Local.i4pluslines.Declare(String)
+V.Local.sfiletocheck.Declare(String)
+V.Local.sqtyorder.Declare(String)
+V.Local.srunqty.Declare(String)
+V.Local.ssetup.Declare(String)
+V.Global.bfatalpass.Declare(Boolean)
+V.Local.scomments1.Declare(String)
+V.local.scomments2.Declare(String)
+V.Local.scomments3.Declare(String)
+V.Local.srow4parttogether.Declare(String)
+V.Local.srow4part.Declare(String)
+V.Local.ireadpartrows.Declare(Long)
+V.Local.serrorlog.Declare(String)
+V.Local.serrorlogfinal.Declare(String)
+V.Local.isetup.Declare(Long)
+V.Local.supdate.Declare(String)
+V.Local.srow4plus.Declare(String)
+V.Local.srow4pluspart.Declare(String)
+V.Local.ssql3.Declare(String)
+V.Local.sqtyordermat.Declare(String)
+V.Local.ssetupqty.Declare(String)
+V.Local.ssql4.Declare(String)
+V.Local.sunitsopen.Declare(String)
+V.Local.sfirstcalc.Declare(String)
+V.Local.ssecondcalc.Declare(String)
+V.Local.ssetupcalc.Declare(String)
+V.Local.smatfilepath.Declare(String)
+V.Local.smattempfilepath.Declare(String)
+V.Local.slocchar.Declare(String)
+V.Local.sloccharfinal.Declare(String)
+V.Local.berrorfileexists.Declare(Boolean)
+V.Local.bGLOBAL.Declare(Boolean)
+V.Local.ipbarmax.Declare(Float)
+V.Local.inewpbarvalue.Declare(Float)
+V.Local.ipbarreset.Declare(Float)
+V.Local.bGLOBAL.Set(False)
+V.Local.bmatsexist.declare(Boolean)
+V.Local.soption.Declare(Long)
+V.Local.sstartdate.Declare(String)
+V.Local.sduedate.Declare(String)
+V.Local.scallwrapreturn.Declare(String)
+V.Local.sfilestobeprocessed.Declare(String)
+V.Local.snewseq.Declare(String)
+V.Local.iprocessed2.Declare(Long)
+V.Local.smovefile.Declare(String)
+
+V.Local.berrored.Declare(Boolean)
+
+'declare the long variables for the error and files counts and set them to 0
+V.Local.ierrorsfound.Declare(Long)
+V.Local.ifilesprocessed.Declare(Long)
+V.Local.ierrorsfound.Set(0)
+V.Local.ifilesprocessed.Set(0)
+
+V.Local.smatseq.Declare(String)
+V.Local.smatseqfinal.Declare(String)
+
+V.Local.berrored.Set(False)
+
+'set the progress bar's value to 0
+V.Global.progbarvalue.Set(0)
+'make the progress bar visible
+Gui.Form1.progress1.Visible(true)
+Gui.Form1.progress1.Value(V.Global.progbarvalue)
+F.Intrinsic.Math.Round(V.global.progbarvalue,2,V.Global.progbarvalue)
+
+'F.Intrinsic.UI.ChangeWaitStatus("Processing Records...",V.local.i.LBound,0,V.Local.i.UBound)
+'set the boolean variables that determines whether or not it has passed the "fatal" error checks
+V.Global.bfatalpass.Set(False)
+
+'build the file path to the error log that will be created
+F.Intrinsic.String.Build("{0}\{1}",V.Caller.FilesDir,"Error Log",V.Local.serrorlog)
+
+'create/set the file path for the "processed" files
+V.Local.scopyfilepath.Declare(String)
+V.Local.scopyfilepathfinal.Declare(String)
+F.Intrinsic.String.Build("{0}{1}",V.caller.FilesDir,"\Processed\",V.local.scopyfilepath)
+'V.Local.scopyfilepath.Set("\\gsshv2k8db5\Global\Files\Processed\")
+
+V.Local.serrorfiledirectory.Declare(String)
+'V.Local.serrorfiledirectory.Set("\\gsshv2k8db5\Global\Files\Error Log\Error Log")
+F.Intrinsic.String.Build("{0}{1}",V.Caller.FilesDir,"\Error Log\Error Log",V.Local.serrorfiledirectory)
+
+
+'create/set the file path for the "incoming" files
+V.Local.sincomingpath.Declare(String)
+'V.Local.sincomingpath.Set("\\gsshv2k8db5\Global\Files\Incoming\")
+F.Intrinsic.String.Build("{0}{1}",V.Caller.FilesDir,"\Incoming\",V.Local.sincomingpath)
+
+V.Local.iprocessed.Declare(Long)
+V.Local.sjobandpart.Declare(String)
+
+'disables the buttons/error count textbox
+Gui.Form1.cmdError.Enabled(false)
+Gui.Form1.cmdProcess.Enabled(false)
+
+'check to see if the .cfg file is there
+F.Intrinsic.String.Concat(V.Caller.FilesDir,"\WOUpdate.cfg",V.Local.sdocfile)
+	F.Intrinsic.File.exists(V.Local.sdocfile,V.Local.bdocexists)
+'if the file doesn't exist display a message and end
+F.Intrinsic.Control.If(V.Local.bdocexists,=,False)
+	F.Intrinsic.UI.Msgbox("Configuration File Could Not Be Found")
+	F.Intrinsic.Control.end
+'if the file does exist continue with the process
+F.Intrinsic.Control.Else
+	F.Intrinsic.File.File2String(V.local.sdocfile,V.Local.sfiledata)
+	F.Intrinsic.String.Split(V.Local.sfiledata,V.Ambient.NewLine,V.Local.sfilelines)
+	'set the global variables as the file paths for incoming and outgoing file paths
+	V.Global.Incoming.Set(V.Local.sfilelines(0))
+	V.Global.Processed.Set(V.Local.sfilelines(1))
+F.Intrinsic.Control.EndIf
+
+'get the list of all files stored within the incoming folder
+F.Intrinsic.File.GetFileList(V.Global.Incoming,V.Local.sfilelist)
+'split them based on colon
+F.Intrinsic.String.Split(V.Local.sfilelist,":",V.Local.sfilelist)
+
+F.Intrinsic.Control.If(V.Local.sfilelist,=,"")
+	 F.Intrinsic.UI.Msgbox("There are no files in the \Incoming directory to be processed")
+	F.ODBC.Connection!con.Close
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.endif
+
+V.Local.sfilestobeprocessed.Set(V.Local.sfilelist.UBound)
+F.Intrinsic.Math.Add(V.Local.sfilestobeprocessed,1,V.Local.sfilestobeprocessed)
+V.Local.ipbarmax.Set(V.Local.sfilelist.UBound)
+Gui.Form1.txt2.Text(V.Local.sfilestobeprocessed)
+F.Intrinsic.Math.Add(V.Local.ipbarmax,1,V.Local.ipbarmax)
+
+'loop through the files list
+F.Intrinsic.Control.For(V.Local.i,V.Local.sfilelist.LBound,V.Local.sfilelist.UBound,1)
+
+'	F.Intrinsic.Control.If(V.Local.i,>,V.Local.sfilelist.UBound)
+'		V.Local.i.Set(V.Local.sfilelist.UBound)
+'
+'	F.Intrinsic.Control.EndIf
+	'concat the file path and the name of the file
+	F.Intrinsic.String.Concat(V.Local.sincomingpath,V.Local.sfilelist(v.Local.i),V.Local.sfiletocheck)
+	'check to see if the file ends in _GLOBAL
+
+	F.Intrinsic.String.IsInString(V.Local.sfilelist(v.Local.i),"_GLOBAL",True,V.Local.bGLOBAL)
+'	'if the file ends in _GLOBAL set local variables to data from the file
+
+	F.Intrinsic.Control.If(V.Local.bGLOBAL,=,True)
+		F.intrinsic.File.File2String(V.Local.sfiletocheck,V.Local.sprocessfile)
+		'split the data based on new lines
+		F.intrinsic.string.split(V.Local.sprocessfile,V.Ambient.NewLine,V.Local.sprocessfilelines)
+		'set the first line of the file to a local variable and split it to get the job and part numbers
+		V.Local.sjobpart.Set(V.Local.sprocessfilelines(0))
+		F.Intrinsic.String.Split(V.Local.sjobpart,"|",V.Local.sjobpart)
+		V.Local.sjob.Set(V.Local.sjobpart(0))
+		V.Local.swo.Set(V.Local.sjobpart(0))
+		'check to see if there is a "-" within the line, if there is set the second part following the "-" as the suffix, otherwise the suffix will  be set to " "
+		F.intrinsic.String.isinstring(V.Local.sjob,"-",True,V.Local.bsuff)
+		F.Intrinsic.Control.If(V.local.bsuff,=,True)
+			F.Intrinsic.String.Split(V.Local.sjob,"-",V.Local.sjob)
+			V.Local.sjob.Set(V.Local.sjob(0))
+			V.Local.ssuff.Set(V.Local.sjob(1))
+		F.Intrinsic.Control.Else
+			V.Local.sjob.Set(V.Local.sjob)
+			V.Local.ssuff.Set("")
+		F.Intrinsic.Control.EndIf
+		'set the reference and numerical numbers from the second and third lines of the file
+		V.Local.sref.Set(V.Local.sprocessfilelines(1))
+		V.Local.snumerical.Set(V.Local.sprocessfilelines(2))
+		'set the local variable to part
+		V.Local.spart.Set(V.Local.sjobpart(1))
+		'set the rows that are 4+ to the sprocessfilelines local variable
+		F.Intrinsic.control.For(V.Local.i2,3,V.Local.sprocessfilelines.UBound,1)
+			F.Intrinsic.Control.If(V.Local.sprocessfilelines(v.Local.i2),<>,"")
+				V.Local.spartnumerical.Set(V.Local.sprocessfilelines(v.Local.i2))
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Next(V.Local.i2)
+	F.Intrinsic.Control.Else
+		V.Local.bGLOBAL.Set(False)
+		F.Intrinsic.Math.Add(V.Global.progbarvalue,1,V.Global.progbarvalue)
+		V.Local.ipbarreset.Set(V.Global.progbarvalue)
+		F.Intrinsic.Math.Div(V.Global.progbarvalue,V.Local.ipbarmax,V.global.progbarvalue)
+		F.Intrinsic.Math.Round(V.Global.progbarvalue,2,V.Global.progbarvalue)
+		F.Intrinsic.Math.Mult(V.Global.progbarvalue,100,V.Global.progbarvalue)
+		Gui.Form1.progress1.Value(V.global.progbarvalue)
+		V.Global.progbarvalue.Set(V.local.ipbarreset)
+		'if the file doesn't end in _GLOBAL move to the next file
+		F.Intrinsic.Control.Next(V.Local.i)
+	F.Intrinsic.Control.EndIf
+
+	F.Intrinsic.Control.If(V.Local.bGLOBAL,=,True)
+		'see if job exists in JOB_HEADER, if it doesn't error the file and move to the next file, if it is found, set the bjobcheck variable to True because it passed the read job error test
+		F.Intrinsic.String.Build("SELECT JOB from V_JOB_HEADER where JOB = '{0}'",V.Local.sjob,V.Local.ssql)
+		F.ODBC.Connection!con.OpenLocalRecordsetRO("rst",V.Local.ssql)
+		F.Intrinsic.Control.If(V.ODBC.con!rst.EOF,=,True)
+			'if there is no job in the job header that matches the current job, append the file with _ERROR and store the information in the error log file with the description "invalid work order number used"
+			F.Intrinsic.String.Concat(V.Local.sfilelines(0),V.Local.sfilelist(v.Local.i),V.Local.serrorfile)
+			F.Intrinsic.String.Concat(V.Local.scopyfilepath,V.Local.sfilelist(v.Local.i),"_ERROR",V.Local.scopyfilepathfinal)
+			F.Intrinsic.Math.Add(V.Local.ierrorsfound,1,V.Local.ierrorsfound)
+			'add 1 and set the error textbar to the value of ierrorsfound
+			Gui.form1.txterror.text(V.Local.ierrorsfound)
+			F.Intrinsic.Math.Add(V.Global.progbarvalue,1,V.Global.progbarvalue)
+			V.Local.ipbarreset.Set(V.Global.progbarvalue)
+			'update the progressbar
+			F.Intrinsic.Math.Div(V.Global.progbarvalue,V.Local.ipbarmax,V.global.progbarvalue)
+			F.Intrinsic.Math.Round(V.Global.progbarvalue,2,V.Global.progbarvalue)
+			F.Intrinsic.Math.Mult(V.Global.progbarvalue,100,V.Global.progbarvalue)
+			Gui.Form1.progress1.Value(V.global.progbarvalue)
+			V.Global.progbarvalue.Set(V.local.ipbarreset)
+
+			'continue building the error file log
+			F.Intrinsic.String.Build("{0} {1} {2} {3}",V.Local.spart,V.Local.sref,V.Local.swo,"Invalid Work Order Number Used",V.Local.serrorlog)
+			F.Intrinsic.Control.If(V.Local.serrorlogfinal,<>,"")
+				F.Intrinsic.String.Build("{0}{1}{2}",V.local.serrorlogfinal,V.ambient.newline,V.local.serrorlog,V.Local.serrorlogfinal)
+			F.Intrinsic.Control.Else
+				F.Intrinsic.string.Build("{0}{1}",V.Local.serrorlogfinal,V.Local.serrorlog,V.Local.serrorlogfinal)
+			F.Intrinsic.Control.EndIf
+
+			'build the filepath to send the file to if it errors out
+			F.Intrinsic.String.Build("{0}{1}{2}",V.Local.scopyfilepath,V.Local.sfilelist(v.local.i),"_ERROR",V.local.scopyfilepathfinal)
+
+				F.Intrinsic.file.MoveFile(V.Local.serrorfile,V.Local.scopyfilepathfinal,V.local.iprocessed)
+			V.Local.scopyfilepathfinal.Set("")
+			F.ODBC.con!rst.Close
+			F.Intrinsic.Control.Next(V.Local.i)
+		F.Intrinsic.Control.Else
+			'if it is found set bjobcheck equal to true
+			V.Local.bjobcheck.Set(True)
+			F.ODBC.con!rst.Close
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+
+		F.Intrinsic.Control.If(V.Local.bjobcheck,=,True)
+			'see if Part exists in JOB_HEADER, if it doesn't error the file and move to the next file, if it is found, set the bpartcheck variable to True because it passed the read part error test
+			F.Intrinsic.string.Build("SELECT PART FROM V_JOB_HEADER WHERE PART = '{0}'",V.Local.spart,V.Local.ssql)
+			F.ODBC.Connection!con.OpenLocalRecordsetRO("rst",V.Local.ssql)
+			F.Intrinsic.Control.If(V.ODBC.con!rst.EOF,=,True)
+				'if there is no part found in job header that matches the current part append the file with _ERROR and store the information in the error log file with the description "Invalid Parent Part Number used"
+				F.Intrinsic.String.Concat(V.Local.sfilelines(0),V.Local.sfilelist(v.Local.i),V.Local.serrorfile)
+				F.Intrinsic.String.Concat(V.Local.scopyfilepath,V.Local.sfilelist(v.Local.i),"_ERROR",V.Local.scopyfilepathfinal)
+				'add 1 to the errors found and update the progress bar
+				F.Intrinsic.Math.Add(V.Local.ierrorsfound,1,V.Local.ierrorsfound)
+				Gui.form1.txterror.text(V.Local.ierrorsfound)
+				F.Intrinsic.Math.Add(V.Global.progbarvalue,1,V.Global.progbarvalue)
+				V.Local.ipbarreset.Set(V.Global.progbarvalue)
+				F.Intrinsic.Math.Div(V.Global.progbarvalue,V.Local.ipbarmax,V.global.progbarvalue)
+				F.Intrinsic.Math.Round(V.Global.progbarvalue,2,V.Global.progbarvalue)
+				F.Intrinsic.Math.Mult(V.Global.progbarvalue,100,V.Global.progbarvalue)
+				Gui.Form1.progress1.Value(V.global.progbarvalue)
+				V.Global.progbarvalue.Set(V.local.ipbarreset)
+				'build the error log
+				F.Intrinsic.String.Build("{0} {1} {2} {3}",V.Local.spart,V.Local.sref,V.Local.swo,"Invalid Work Parent Part Number Used",V.Local.serrorlog)
+				F.Intrinsic.Control.If(V.Local.serrorlogfinal,<>,"")
+					F.Intrinsic.String.Build("{0}{1}{2}",V.local.serrorlogfinal,V.ambient.newline,V.local.serrorlog,V.Local.serrorlogfinal)
+				F.Intrinsic.Control.Else
+					F.Intrinsic.string.Build("{0}{1}",V.Local.serrorlogfinal,V.Local.serrorlog,V.Local.serrorlogfinal)
+				F.Intrinsic.Control.EndIf
+				'build the filepath to send the file to if it errors out
+				F.Intrinsic.String.Build("{0}{1}{2}",V.Local.scopyfilepath,V.Local.sfilelist(v.local.i),"_ERROR",V.local.scopyfilepathfinal)
+
+				F.Intrinsic.file.MoveFile(V.Local.serrorfile,V.Local.scopyfilepathfinal,V.local.iprocessed)
+				V.Local.scopyfilepathfinal.Set("")
+				F.ODBC.con!rst.Close
+				F.Intrinsic.Control.Next(V.Local.i)
+			F.Intrinsic.Control.Else
+				'if it is found set bpartcheck equal to true
+				V.Local.bpartcheck.Set(True)
+				F.ODBC.con!rst.Close
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.endif
+
+		F.Intrinsic.Control.If(V.Local.bjobcheck,=,True)
+		F.Intrinsic.Control.AndIf(V.Local.bpartcheck,=,True)
+			'if the file contains 4+ rows, loop through those rows
+			F.Intrinsic.control.For(V.Local.ireadpartrows,3,V.Local.sprocessfilelines.UBound,1)
+				F.Intrinsic.Control.If(V.Local.i,>,V.Local.sfilelist.UBound)
+					V.Local.i.Set(V.Local.sfilelist.UBound)
+
+				F.Intrinsic.Control.EndIf
+				'split the row to get the part number
+				F.Intrinsic.string.Split(V.Local.sprocessfilelines(v.Local.ireadpartrows),"|",V.Local.srow4parttogether)
+				V.Local.srow4part.Set(V.Local.srow4parttogether(0))
+				F.Intrinsic.Control.If(V.Local.srow4part,<>,"")
+
+					F.Intrinsic.String.Build("SELECT PART from V_INVENTORY_MSTR where PART = '{0}'",V.Local.srow4part,V.Local.ssql)
+					F.ODBC.Connection!con.OpenLocalRecordsetRO("rst",V.Local.ssql)
+					F.Intrinsic.Control.If(V.ODBC.con!rst.EOF,=,True)
+						'if there are no parts found in inventory master that match the current part appent the file with _ERROR and store the information in the error log file with the description "Invalid Material Part Number(s) used")
+						F.Intrinsic.String.Concat(V.Local.sfilelines(0),V.Local.sfilelist(v.Local.i),V.Local.serrorfile)
+						F.Intrinsic.String.Concat(V.Local.scopyfilepath,V.Local.sfilelist(v.Local.i),"_ERROR",V.Local.scopyfilepathfinal)
+						'add 1 to the error files counts and set the values to the textbox then update progress bar
+						F.Intrinsic.Math.Add(V.Local.ierrorsfound,1,V.Local.ierrorsfound)
+						Gui.form1.txterror.text(V.Local.ierrorsfound)
+						F.Intrinsic.Control.If(V.Local.berrored,=,False)
+							F.Intrinsic.Math.Add(V.Global.progbarvalue,1,V.Global.progbarvalue)
+							V.Local.ipbarreset.Set(V.Global.progbarvalue)
+							F.Intrinsic.Math.Div(V.Global.progbarvalue,V.Local.ipbarmax,V.global.progbarvalue)
+							F.Intrinsic.Math.Round(V.Global.progbarvalue,2,V.Global.progbarvalue)
+							F.Intrinsic.Math.Mult(V.Global.progbarvalue,100,V.Global.progbarvalue)
+							Gui.Form1.progress1.Value(V.global.progbarvalue)
+							V.Global.progbarvalue.Set(V.local.ipbarreset)
+						F.Intrinsic.Control.EndIf
+						'continue building the error log file
+						F.Intrinsic.String.Build("{0} {1} {2} {3}",V.Local.spart,V.Local.sref,V.Local.swo,"Invalid Part Number(s) Used",V.Local.serrorlog)
+						F.Intrinsic.Control.If(V.Local.serrorlogfinal,<>,"")
+							F.Intrinsic.String.Build("{0}{1}{2}",V.local.serrorlogfinal,V.ambient.newline,V.local.serrorlog,V.Local.serrorlogfinal)
+						F.Intrinsic.Control.Else
+							F.Intrinsic.string.Build("{0}{1}",V.Local.serrorlogfinal,V.Local.serrorlog,V.Local.serrorlogfinal)
+						F.Intrinsic.Control.EndIf
+
+						F.Intrinsic.Control.If(V.Local.berrored,=,False)
+						'build the filepath to send the file to if it errors out
+							F.Intrinsic.String.Build("{0}{1}{2}",V.Local.scopyfilepath,V.Local.sfilelist(v.local.i),"_ERROR",V.local.scopyfilepathfinal)
+							F.Intrinsic.file.MoveFile(V.Local.serrorfile,V.Local.scopyfilepathfinal,V.local.iprocessed)
+						F.Intrinsic.Control.EndIf
+						V.Local.scopyfilepathfinal.Set("")
+						F.ODBC.con!rst.Close
+						V.Local.berrored.Set(True)
+						V.Local.brow4partcheck.Set(False)
+						F.Intrinsic.Control.Next(V.Local.i)
+					F.Intrinsic.Control.Else
+						'if those parts are found set the brow4partcheck variable to true because it passed the 4th row part check test
+						V.Local.brow4partcheck.Set(True)
+						'if it is found...do this
+						F.ODBC.con!rst.Close
+					F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.Next(V.Local.ireadpartrows)
+		F.Intrinsic.Control.EndIf
+
+
+	'check to make sure the file passed the fatal error test based on part, job and row4 part, if so then continue with the sequential evaluation
+	F.Intrinsic.Control.If(V.Local.bpartcheck,=,True)
+	F.Intrinsic.Control.AndIf(V.Local.bjobcheck,=,True)
+	F.Intrinsic.Control.AndIf(V.Local.brow4partcheck,=,True)
+		'since the file passed all checks, move it to the processed folder
+		F.Intrinsic.String.Build("{0}{1}",V.Local.scopyfilepath,V.Local.sfilelist(v.local.i),V.local.smovefile)
+
+		F.Intrinsic.file.MoveFile(V.Local.sfiletocheck,V.Local.smovefile,V.local.iprocessed2)
+	'			
+		F.Intrinsic.Math.Add(V.Local.ifilesprocessed,1,V.Local.ifilesprocessed)
+		F.Intrinsic.String.Build("Select COMMENTS_1, COMMENTS_2, COMMENTS_3 from V_JOB_HEADER where JOB = '{0}' and SUFFIX = '{1}'",V.Local.sjob,V.Local.ssuff,V.Local.ssql)
+		F.ODBC.Connection!con.OpenLocalRecordsetRO("rst",V.Local.ssql)
+		V.Local.scomments1.Set(V.ODBC.con!rst.FieldValTrim!COMMENTS_1)
+		V.Local.scomments2.Set(V.ODBC.con!rst.FieldValTrim!COMMENTS_2)
+		V.Local.scomments3.Set(V.ODBC.con!rst.FieldValTrim!COMMENTS_3)
+		'concat the reference number to precede with a #
+		F.Intrinsic.String.Concat("#",V.local.sref,V.Local.sref)
+		'if there is nothing in the comments_1 field, update the comments_1 field with the suffix that was created
+		F.Intrinsic.Control.If(V.Local.scomments1,=,"")
+			F.Intrinsic.String.build("UPDATE JOB_HEADER set COMMENTS_1 = '{0}' where JOB ='{1}' and SUFFIX = '{2}'",V.Local.sref,V.local.sjob,V.local.ssuff,V.Local.ssql2)
+			F.ODBC.Connection!con.OpenLocalRecordsetRO("rst2",V.Local.ssql2)
+			F.ODBC.con!rst2.Close
+		F.Intrinsic.Control.ElseIf(V.Local.scomments2,=,"")
+		'if there is nothing in the comments_2 field, update the comments_2 field with the suffix that was created
+			F.Intrinsic.String.build("UPDATE JOB_HEADER set COMMENTS_2 = '{0}' where JOB ='{1}' and SUFFIX = '{2}'",V.Local.sref,V.local.sjob,V.local.ssuff,V.Local.ssql2)
+			F.ODBC.Connection!con.OpenLocalRecordsetRO("rst2",V.Local.ssql2)
+			F.ODBC.con!rst2.Close
+		F.Intrinsic.Control.ElseIf(V.Local.scomments3,=,"")
+		'if there is nothing in the comments_3 field, update the comments_3 field with the suffix that was created
+			F.Intrinsic.String.build("UPDATE JOB_HEADER set COMMENTS_3 = '{0}' where JOB ='{1}' and SUFFIX = '{2}'",V.Local.sref,V.local.sjob,V.local.ssuff,V.Local.ssql2)
+			F.ODBC.Connection!con.OpenLocalRecordsetRW("rst2",V.Local.ssql2)
+			F.ODBC.con!rst2.Close
+		'otherwise add another line to the error log with the description "Failed to Update Additional Description"
+		F.Intrinsic.Control.Else
+			F.Intrinsic.Math.Add(V.Local.ierrorsfound,1,V.Local.ierrorsfound)
+			Gui.form1.txterror.text(V.Local.ierrorsfound)
+			'continue building the error file
+			F.Intrinsic.String.Build("{0} {1} {2} {3}",V.Local.spart,V.Local.sref,V.Local.swo,"Failed to Update Additional Desription",V.Local.serrorlog)
+			F.Intrinsic.Control.If(V.Local.serrorlogfinal,<>,"")
+				F.Intrinsic.String.Build("{0}{1}{2}",V.local.serrorlogfinal,V.ambient.newline,V.local.serrorlog,V.Local.serrorlogfinal)
+			F.Intrinsic.Control.Else
+				F.Intrinsic.string.Build("{0}{1}",V.Local.serrorlogfinal,V.Local.serrorlog,V.Local.serrorlogfinal)
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.EndIf
+		F.ODBC.con!rst.Close
+
+		'find the sequence in job operations where the left 3 characters of the workcenter = 121 and the LMO = L
+		F.Intrinsic.String.Build("SELECT SEQ, PART, LMO from V_JOB_OPERATIONS where JOB = '{0}' and SUFFIX = '{1}' and PART LIKE '{2}' and LMO = '{3}'",V.local.sjob,V.Local.ssuff,"121%","L",V.Local.ssql)
+		F.ODBC.Connection!con.OpenLocalRecordsetRO("rst",V.Local.ssql)
+		'if the end of file is not equal to true, save the SEQ as v.local.slaborseq, then delete all material sequences from JOB_OPERATIONS where the SEQ is less than the 'labor sequence'
+		F.Intrinsic.Control.If(V.ODBC.con!rst.EOF,<>,True)
+
+			V.local.slaborseq.Set(V.ODBC.con!rst.FieldValtrim!SEQ)
+			F.ODBC.con!rst.Close
+			F.Intrinsic.String.Build("DELETE FROM JOB_OPERATIONS WHERE SEQ < '{0}' and LMO = '{1}'",V.Local.slaborseq,"M",V.local.ssql2)
+			F.ODBC.Connection!con.OpenLocalRecordsetRO("rst2",V.Local.ssql2)
+			F.ODBC.con!rst2.Close
+		F.Intrinsic.Control.Else
+			F.ODBC.con!rst.Close
+			'update the counters/textboxes for errors found/files processed
+			F.Intrinsic.Math.Add(V.Local.ierrorsfound,1,V.Local.ierrorsfound)
+			Gui.form1.txterror.text(V.Local.ierrorsfound)
+			'if no 'labor sequences' found, skip the deletion and write a line to the error log with the description "Unable to Find 121 Sequence"
+			F.Intrinsic.String.Build("{0} {1} {2} {3}",V.Local.spart,V.Local.sref,V.Local.swo,"Unable to Find 121 Sequence",V.Local.serrorlog)
+			F.Intrinsic.Control.If(V.Local.serrorlogfinal,<>,"")
+				F.Intrinsic.String.Build("{0}{1}{2}",V.local.serrorlogfinal,V.ambient.newline,V.local.serrorlog,V.Local.serrorlogfinal)
+			F.Intrinsic.Control.Else
+				F.Intrinsic.string.Build("{0}{1}",V.Local.serrorlogfinal,V.Local.serrorlog,V.Local.serrorlogfinal)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.EndIf
+
+	'for each material step remaining in work order, if UM = "EA", update Setup Qty to 1 - ((WO Header Qty * Run Qty) - (Run Qty * WO Qty Truncated to a whole number)
+	F.Intrinsic.String.Build("SELECT LMO, JOB, SUFFIX, SEQ FROM V_JOB_OPERATIONS WHERE FLAG_CLOSED = '{0}' AND JOB = '{1}' AND SUFFIX = '{2}' and UM = '{3}' and LMO = '{4}'","Y",V.Local.sjob,V.Local.ssuff,"EA","M",V.Local.ssql)
+	F.ODBC.Connection!con.OpenLocalRecordsetRO("rst",V.local.ssql)
+	F.Intrinsic.Control.If(V.ODBC.con!rst.eof,<>,True)
+		'if end of file is not equal to true, upload the information to the uSetup UDT
+		F.Intrinsic.Variable.LoadUDTFromRecordset("con","rst","uglobal.uSetup","false",1)
+		'loop through the UDT
+		F.Intrinsic.Control.For(V.Local.isetup,V.uGlobal.uSetup.LBound,V.uGlobal.uSetup.UBound,1)
+			F.Intrinsic.String.Build("SELECT QTY_ORDER from JOB_HEADER where JOB = '{0}' and SUFFIX = '{1}'",V.uglobal.uSetup(v.Local.isetup)!JOB,V.uGlobal.uSetup(v.Local.isetup)!SUFFIX,V.Local.ssql2)
+			F.ODBC.Connection!con.OpenLocalRecordsetRO("rst2",V.Local.ssql2)
+			F.Intrinsic.Control.If(V.ODBC.con!rst2.EOF,<>,True)
+				'get the QTY_ORDER for calculations
+				V.Local.sqtyorder.Set(V.ODBC.con!rst2.FieldValTrim!QTY_ORDER)
+			
+				F.Intrinsic.String.Build("SELECT UNITS from JOB_OPERATIONS where JOB = '{0}' and SUFFIX = '{1}' and SEQ = '{2}'",V.uGlobal.uSetup(v.Local.isetup)!JOB,V.uGlobal.uSetup(v.Local.isetup)!SUFFIX,V.uGlobal.uSetup(v.Local.isetup)!SEQ,V.Local.ssql4)
+				F.ODBC.Connection!con.OpenLocalRecordsetRO("rst4",V.Local.ssql4)
+				F.Intrinsic.Control.If(V.ODBC.con!rst4.EOF,<>,True)
+					V.Local.sunitsopen.Set(V.odbc.con!rst4.fieldvaltrim!UNITS)
+				F.Intrinsic.Control.EndIf
+				'take the qty order and multiply it by the run_qty (units open) then returned as qty order and return as firstcalc
+				F.Intrinsic.Math.Mult(V.Local.sqtyorder,V.Local.sunitsopen,V.Local.sfirstcalc)
+				'round or truncate the qty order
+				F.Intrinsic.math.Round(V.Local.sqtyorder,0,V.Local.sqtyorder)
+				'multiply the run_qty (units open) by the qty_order and return as second calc
+				F.Intrinsic.Math.Mult(V.Local.sunitsopen,V.Local.sqtyorder,V.Local.ssecondcalc)
+				'subtract the second calculation from the first then return as supdate
+				F.Intrinsic.Math.Sub(V.Local.sfirstcalc,V.Local.ssecondcalc,V.Local.supdate)
+				'subtract supdate from 1 and return as supdate
+				F.Intrinsic.Math.Sub(1,V.Local.supdate,V.Local.supdate)
+
+				F.Intrinsic.String.Build("UPDATE JOB_OPERATIONS set SETUP = '{0}' where JOB = '{1}' and SUFFIX = '{2}' and SEQ = '{3}'",V.local.supdate,V.uglobal.uSetup(v.Local.isetup)!JOB,V.uGlobal.uSetup(v.Local.isetup)!SUFFIX,V.uGlobal.uSetup(v.Local.isetup)!SEQ,V.Local.ssql3)
+				F.ODBC.Connection!con.OpenLocalRecordsetRW("rst3",V.Local.ssql)
+				F.ODBC.con!rst3.Close
+	'			F.Intrinsic.Control.EndIf
+				F.ODBC.con!rst2.Close
+				F.ODBC.con!rst4.Close
+			F.Intrinsic.Control.Else
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Next(V.local.isetup)
+	F.Intrinsic.Control.EndIf
+	F.ODBC.con!rst.Close
+
+	'for each line in the file after line 3 subtract 25 from labor sequence and return to 'labor sequence' then create a new material sequence using 'labor sequence' as the sequence number
+	F.Intrinsic.Control.For(V.Local.i4pluslines,3,V.local.sprocessfilelines.ubound,1)
+
+		F.Intrinsic.Control.If(V.Local.slaborseq,<>,"")
+		F.Intrinsic.Control.AndIf(V.Local.sprocessfilelines(v.local.i4pluslines),<>,"")
+
+			F.intrinsic.Math.Sub(V.Local.slaborseq,25,V.Local.slaborseq)
+			F.Intrinsic.String.LPad(V.Local.slaborseq,"0",6,V.Local.slaborseq)
+
+			F.Intrinsic.String.Split(V.local.sprocessfilelines(v.local.i4pluslines),"|",V.Local.srow4plus)
+			V.Local.srow4part.Set(V.Local.srow4plus(0))
+			V.Local.srunqty.Set(V.Local.srow4plus(1))
+			V.Local.ssetupqty.Set(V.Local.srow4plus(1))
+
+			F.Intrinsic.String.Build("SELECT QTY_ORDER from JOB_HEADER where JOB = '{0}' and SUFFIX = '{1}'",V.Local.sjob,V.Local.ssuff,V.Local.ssql)
+			F.ODBC.Connection!con.OpenLocalRecordsetRO("rst",V.Local.ssql)
+			F.Intrinsic.Control.If(V.ODBC.con!rst.EOF,<>,True)
+				'THIS IS ASSUMING QTY_ORDER IS "WO_QTY"
+				V.Local.sqtyordermat.Set(V.ODBC.con!rst.FieldValTrim!QTY_ORDER)
+				'per customer run qty is the number to the right in the line divided by WO qty and rounded 4 decimal places
+				F.Intrinsic.Math.Div(V.Local.srunqty,V.Local.sqtyordermat,V.Local.srunqty)
+				F.intrinsic.Math.Round(V.Local.srunqty,4,V.Local.srunqty)
+				'per customer the setup qty is the number to the right in the line - (WO qty * Run Qty))
+				F.Intrinsic.Math.Mult(V.Local.sqtyordermat,V.Local.srunqty,V.Local.ssetupcalc)
+				F.Intrinsic.Math.Sub(1,V.Local.ssetupcalc,V.Local.ssetup)
+
+				'create the text file needed for the material sequence upload
+				F.Intrinsic.String.RPad(V.Local.sjob," ",6,V.Local.sjob)
+		
+				F.Intrinsic.String.Build("{0}{1}{2}",V.Local.sjob,V.local.ssuff,V.local.slaborseq,V.Local.smatseq)
+				F.Intrinsic.String.rpad(V.Local.smatseq," ",22,V.Local.smatseq)
+				F.Intrinsic.String.Build("{0}{1}",V.Local.smatseq,"M",V.Local.smatseq)
+				F.Intrinsic.string.RPad(V.Local.smatseq," ",101,V.Local.smatseq)
+				F.Intrinsic.String.Build("{0}{1}",V.Local.smatseq,1,V.Local.smatseq)
+			
+				F.Intrinsic.control.if(V.Local.smatseqfinal,<>,"")
+					F.Intrinsic.String.Build("{0}{1}{2}",V.Local.smatseqfinal,V.Ambient.newline,V.Local.smatseq,V.Local.smatseqfinal)
+				F.Intrinsic.Control.Else
+					F.Intrinsic.String.Build("{0}{1}",V.Local.smatseqfinal,V.Local.smatseq,V.Local.smatseqfinal)
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.EndIf
+			F.ODBC.con!rst.Close
+		F.Intrinsic.Control.EndIf
+
+	F.Intrinsic.Control.Next(V.Local.i4pluslines)
+
+	'CHECK FOR SORT CODE IN JOB HEADER IF EQUAL TO BLANK
+	F.Intrinsic.String.Build("SELECT CODE_SORT from V_JOB_HEADER where JOB = '{0}' and SUFFIX = '{1}'",V.Local.sjob,V.Local.ssuff,V.Local.ssql)
+	F.ODBC.Connection!con.OpenLocalRecordsetRO("rst",V.Local.ssql)
+	F.Intrinsic.Control.If(V.odbc.con!rst.EOF,=,True)
+	'if sort code is not blank set to PC concatenated with the right most character of the parent part location
+		F.Intrinsic.String.Build("SELECT RIGHT (RTRIM(LOCATION),1) from V_JOB_HEADER as RLOC where JOB = '{0}'",V.Local.sjob,V.Local.ssql2)
+		F.ODBC.Connection!con.OpenLocalRecordsetRO("rst2",V.Local.ssql2)
+		F.Intrinsic.Control.If(V.ODBC.con!rst.EOF,=,False)
+			V.Local.slocchar.Set(V.ODBC.con!rst.FieldValTrim!RLOC)
+		F.Intrinsic.Control.Else
+			V.Local.slocchar.Set("")
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.String.Concat("PC",V.Local.slocchar,V.Local.sloccharfinal)
+		F.Intrinsic.String.build("UPDATE V_JOB_HEADER set CODE_SORT = '{0}' where JOB = '{1}' and SUFFIX = '{2}'",V.Local.sloccharfinal,V.local.sjob,V.local.ssuff,V.Local.ssql3)
+		F.ODBC.Connection!con.OpenLocalRecordsetRW("rst3",V.Local.ssql3)
+		F.ODBC.con!rst.Close
+		F.ODBC.con!rst2.Close
+		F.ODBC.con!rst3.Close
+	F.Intrinsic.Control.Else
+		F.ODBC.con!rst.Close
+		'update the errors found textbox/counter
+		F.Intrinsic.Math.Add(V.Local.ierrorsfound,1,V.Local.ierrorsfound)
+		Gui.form1.txterror.text(V.Local.ierrorsfound)
+
+		'if the code sort is not blank add a record to the error log file with description "failed to update user code"
+		F.Intrinsic.String.Build("{0} {1} {2} {3}",V.Local.spart,V.Local.sref,V.Local.swo,"Failed to Update User Code",V.Local.serrorlog)
+		F.Intrinsic.Control.If(V.Local.serrorlogfinal,<>,"")
+			F.Intrinsic.String.Build("{0}{1}{2}",V.local.serrorlogfinal,V.ambient.newline,V.local.serrorlog,V.Local.serrorlogfinal)
+		F.Intrinsic.Control.Else
+			F.Intrinsic.string.Build("{0}{1}",V.Local.serrorlogfinal,V.Local.serrorlog,V.Local.serrorlogfinal)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+
+	'Check to see if the there are material sequences that need to be uploaded
+	F.Intrinsic.Control.If(V.local.smatseqfinal,<>,"")
+		'check to see if there is an "JOBCOST.TXT" text file in the global files dicrectory, if so delete it and create a new one.
+		F.Intrinsic.String.Build("{0}\JOBCOST.TXT",V.Caller.FilesDir,V.Local.smatfilepath)
+		F.Intrinsic.File.Exists(V.local.smatfilepath,V.Local.bmatsexist)
+			F.Intrinsic.Control.If(V.Local.bmatsexist,=,True)
+				F.Intrinsic.File.DeleteFile(V.Local.smatfilepath)
+				F.Intrinsic.file.String2File(V.Local.smatfilepath,V.Local.smatseqfinal)
+				F.Global.General.CallWrappersync(50,"UPLJOBST/a")
+			F.Intrinsic.control.Else
+				F.Intrinsic.file.String2File(V.Local.smatfilepath,V.Local.smatseqfinal)
+				F.Global.General.CallWrappersync(50,"UPLJOBST/a")
+			F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+
+''		F.Intrinsic.Debug.CallWrapperDebugEnable
+	'select the needed information for the callwrapper 500030 to be uploaded from the JOB_HEADER table
+	F.Intrinsic.String.Build("SELECT DATE_DUE, DATE_START, JOB, SUFFIX from V_JOB_HEADER where JOB = '{0}' and SUFFIX = '{1}'",V.Local.sjob,V.Local.ssuff,V.Local.ssql)
+	F.ODBC.Connection!con.OpenLocalRecordsetRO("rst",V.Local.ssql)
+		F.Intrinsic.Control.If(V.odbc.con!rst.EOF,=,False)
+			V.Local.sstartdate.Set(V.odbc.con!rst.FieldValTrim!DATE_START)
+			V.Local.sduedate.Set(V.ODBC.con!rst.FieldValTrim!DATE_DUE)
+
+			F.ODBC.con!rst.Close
+
+			F.Intrinsic.String.Build("select MAX (seq) as SEQ from job_OPERATIONS where job = '{0}' and suffix = '{1}' and seq < '{2}' and LMO <> '{3}'",V.local.sjob,V.local.ssuff,"99500","C",V.local.ssql)
+			F.ODBC.Connection!con.OpenLocalRecordsetRO("rst",V.Local.ssql)
+			F.Intrinsic.Control.If(V.ODBC.con!rst.EOF,=,False)
+				V.Local.snewseq.Set(V.ODBC.con!rst.FieldValTrim!SEQ)
+				F.intrinsic.Math.Add(V.local.snewseq,100,V.Local.snewseq)
+				F.Intrinsic.String.Build("{0}!*!{1}!*!{2}!*!{3}!*!{4}!*!{5}",V.Local.sstartdate,V.Local.sduedate,V.Local.sjob,V.Local.ssuff,V.Local.snewseq,"B",V.Local.scallwrapreturn)
+				F.Global.General.CallWrapperAsync(500030,V.Local.scallwrapreturn)
+				F.odbc.con!rst.Close
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+	V.Local.bpartcheck.Set(False)
+	V.Local.bjobcheck.Set(False)
+	V.Local.brow4partcheck.Set(False)
+	'update the progress bar
+	F.Intrinsic.Math.Add(V.Global.progbarvalue,1,V.Global.progbarvalue)
+	V.Local.ipbarreset.Set(V.Global.progbarvalue)
+	F.Intrinsic.Math.Div(V.Global.progbarvalue,V.Local.ipbarmax,V.global.progbarvalue)
+	F.Intrinsic.Math.Round(V.Global.progbarvalue,2,V.Global.progbarvalue)
+	F.Intrinsic.Math.Mult(V.Global.progbarvalue,100,V.Global.progbarvalue)
+	Gui.Form1.progress1.Value(V.global.progbarvalue)
+	V.Global.progbarvalue.Set(V.local.ipbarreset)
+
+F.Intrinsic.Control.Next(V.Local.i)
+
+	'check to see if the error file exists, if so delete it and create a new one with the error file that was generated
+	F.Intrinsic.File.Exists(V.Local.serrorfiledirectory,V.Local.berrorfileexists)
+	F.Intrinsic.Control.If(V.Local.berrorfileexists,=,True)
+		F.Intrinsic.File.DeleteFile(V.Local.serrorfiledirectory)
+		F.Intrinsic.File.String2File(V.local.serrorfiledirectory,V.Local.serrorlogfinal)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.File.String2File(V.local.serrorfiledirectory,V.Local.serrorlogfinal)
+	F.Intrinsic.Control.EndIf
+
+'enable the error and process buttons again
+Gui.Form1.cmdError.Enabled(true)
+Gui.Form1.cmdProcess.Enabled(true)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdprocess_click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_3874_Auto_WO_Update.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form1_unload)
+Function.Intrinsic.Control.EndIf
+
+
+program.sub.cmdprocess_click.end
+
+program.sub.cmderror_click.start
+F.Intrinsic.Control.SetErrorHandler("cmderror_click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.serrorpath.Declare(String)
+V.Local.ierror.Declare(Long)
+V.Local.berrorfileexists.Declare(Boolean)
+
+V.Local.serrorpath.Set("\\gsshv2k8db5\Global\Files\Error Log\Error Log")
+'V.Local.serrorpath.Set("L:\FILES\Error Log\Error_Log")
+V.Local.ierror.Set(0)
+
+F.Intrinsic.File.Exists(V.Local.serrorpath,V.Local.berrorfileexists)
+
+F.Intrinsic.Control.If(V.Local.berrorfileexists,=,True)
+	F.Intrinsic.Task.ShellExec(V.Local.ierror,"open",V.Local.serrorpath,"","",1)
+F.Intrinsic.Control.Else
+	F.Intrinsic.UI.Msgbox("Error Log file does not exists")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmderror_click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_3874_Auto_WO_Update.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form1_unload)
+Function.Intrinsic.Control.EndIf
+
+
+program.sub.cmderror_click.end
+
+Program.Sub.Comments.Start
+${$0$}$GCG_Auto_WO_Update$}$WAW$}$7/27/2015
+Program.Sub.Comments.End
+
